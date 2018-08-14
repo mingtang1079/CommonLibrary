@@ -1,8 +1,7 @@
-package com.appbaselib.base;
+package com.appbaselib.presenter;
 
-import android.os.Bundle;
-import android.os.PersistableBundle;
-import android.support.annotation.CallSuper;
+import android.app.Activity;
+import android.content.Context;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -17,60 +16,48 @@ import com.pangu.appbaselibrary.R;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by tangming on 2016/12/13.
- */
+//封装刷新相关逻辑
+public class RefreshPresenter<T> {
 
-public abstract class BaseRefreshActivity<T> extends BaseActivity {
-
-    //    @BindView(R2.id.recyclerview)  (不晓得为啥没用 view为空)
+    Context mContext;
     public RecyclerView mRecyclerview;
-    //    @BindView(R2.id.swipe)
     public SwipeRefreshLayout mSwipeRefreshLayout;
 
     public List<T> mList;
     public BaseQuickAdapter mAdapter;
-    public LinearLayoutManager mLinearLayoutManager;
-
-    public boolean isReReresh = false;//重新刷新 会清除list数据
+    public RecyclerView.LayoutManager mLayoutManager;
+    public boolean isReReresh = true;//重新刷新 清楚数据
     public int pageNo = 1;  //当前页
     public boolean isFirstReresh = true;
     public int pageSize = 10; //每页条数
     public boolean isLoadmore = false; //是否开启加载更多
     public boolean isLoadmoreIng = false;  //是否正在加载更多
+    LoadDataListener mLoadDataListener;
 
-    @Override
-    protected void findView() {
-        super.findView();
-        mRecyclerview = (RecyclerView) findViewById(R.id.recyclerview);
-        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe);
-    }
 
-    @CallSuper
-    @Override
-    protected void initView() {
-
-        initRecyclerView();
-    }
-
-    @Override
-    protected View getLoadingTargetView() {
-        return mSwipeRefreshLayout;
-    }
-
-    // tips:要获取 getintent 的数据 ，必须重写 getIntentData方法，在里面去获取
-    public void initRecyclerView() {
-
-        View mView = getLayoutInflater().inflate(R.layout.view_empty, (ViewGroup) mRecyclerview.getParent(), false);
-        mList = new ArrayList<>();
-        mLinearLayoutManager = new LinearLayoutManager(mContext);
-        mLinearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-        mRecyclerview.setLayoutManager(mLinearLayoutManager);
-        initAdapter();
-        if (mAdapter != null) {
-            mAdapter.setEmptyView(mView);
+    public RefreshPresenter(RecyclerView mRecyclerview, SwipeRefreshLayout mSwipeRefreshLayout, BaseQuickAdapter mAdapter, RecyclerView.LayoutManager mLayoutManager) {
+        this.mRecyclerview = mRecyclerview;
+        this.mSwipeRefreshLayout = mSwipeRefreshLayout;
+        this.mAdapter = mAdapter;
+        this.mLayoutManager = mLayoutManager;
+        mContext = mRecyclerview.getContext();
+        if (mContext instanceof LoadDataListener) {
+            mLoadDataListener = (LoadDataListener) mContext;
+        } else {
+            new IllegalStateException("该activity/Fragment请实现LoadDataListener接口");
         }
-        mSwipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.colorAccent));
+        init();
+    }
+
+    private void init() {
+
+        View mView = ((Activity) mContext).getLayoutInflater().inflate(R.layout.view_empty, (ViewGroup) mRecyclerview.getParent(), false);
+        mList = new ArrayList<>();
+        mRecyclerview.setLayoutManager(mLayoutManager);
+        if (mAdapter == null)
+            throw new NullPointerException("adapter is null");
+        mAdapter.setEmptyView(mView);
+        mSwipeRefreshLayout.setColorSchemeColors(mContext.getResources().getColor(R.color.colorAccent));
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -83,11 +70,6 @@ public abstract class BaseRefreshActivity<T> extends BaseActivity {
 
     }
 
-    public abstract void initAdapter();
-
-
-    public abstract void requestData();
-
 
     public void setLoadMoreListener() {
         isLoadmore = true;
@@ -98,7 +80,9 @@ public abstract class BaseRefreshActivity<T> extends BaseActivity {
 
                 if (!mSwipeRefreshLayout.isRefreshing()) {
                     isLoadmoreIng = true;
-                    requestData();
+                    if (mLoadDataListener != null) {
+                        mLoadDataListener.onLoadData();
+                    }
                 } else {
 
                 }
@@ -108,21 +92,24 @@ public abstract class BaseRefreshActivity<T> extends BaseActivity {
 
     }
 
+
     //重新刷新数据
     public void refreshData(boolean isShow) {
 
+        //   mRecyclerview.scrollToPosition(0);
         isReReresh = true;
         pageNo = 1;
         if (isShow)
             mSwipeRefreshLayout.setRefreshing(true);
-        requestData();
+        if (mLoadDataListener != null) {
+            mLoadDataListener.onLoadData();
+        }
         if (isLoadmore) {
             mAdapter.setEnableLoadMore(false);
             //重新刷新,重新设置加载更多的逻辑
         }
 
     }
-
 
     public void loadComplete(List<? extends T> mData) {
 
@@ -185,7 +172,7 @@ public abstract class BaseRefreshActivity<T> extends BaseActivity {
             mAdapter.notifyDataSetChanged();//清空视图
         }
         mSwipeRefreshLayout.setRefreshing(false);
-        toggleShowLoading(false);
+        //     toggleShowLoading(false);
         if (isLoadmore && isLoadmoreIng) {
             isLoadmoreIng = false;
             if (mData == null || mData.size() == 0)
@@ -199,28 +186,21 @@ public abstract class BaseRefreshActivity<T> extends BaseActivity {
 
     public void loadError(String mes) {
 
-        if (isFirstReresh) {
+        ToastUtils.showToast(mContext, mes, Toast.LENGTH_SHORT);
+        if (mSwipeRefreshLayout != null)
+            mSwipeRefreshLayout.setRefreshing(false);
 
-            toggleShowError(true, "加载失败,点击重新加载", new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    toggleShowLoading(true, "加载中……");
-                    requestData();
-                }
-            });
-        } else {
-            toggleShowLoading(false);
-            ToastUtils.showToast(mContext, mes, Toast.LENGTH_SHORT);
-            if (mSwipeRefreshLayout != null)
-                mSwipeRefreshLayout.setRefreshing(false);
-
-            if (isLoadmoreIng) {
-                isLoadmoreIng = false;
-                mAdapter.loadMoreFail();
-            }
+        if (isLoadmoreIng) {
+            isLoadmoreIng = false;
+            mAdapter.loadMoreFail();
         }
 
     }
 
     //===================================================我是分隔符=========================================================
+
+    public interface LoadDataListener {
+        void onLoadData();
+    }
+
 }
