@@ -39,16 +39,11 @@ public class Html5Activity extends BaseActivity {
     }
 
     @Override
-    protected void findView() {
-        super.findView();
-
-        mToolbar = findViewById(R.id.toolbar);
-        mProgressBar = findViewById(R.id.progress);
-        mWebView = findViewById(R.id.webview);
-    }
-
-    @Override
     protected void initView() {
+
+//        mToolbar = findViewById(R.id.toolbar);
+//        mProgressBar = findViewById(R.id.progress);
+//        mWebView = findViewById(R.id.webview);
 
         Log.d("Url:", url);
 

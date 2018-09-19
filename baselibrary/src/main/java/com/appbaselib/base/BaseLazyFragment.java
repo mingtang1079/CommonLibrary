@@ -15,10 +15,11 @@
  */
 
 package com.appbaselib.base;
-
+import android.databinding.DataBindingUtil;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.databinding.ViewDataBinding;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -29,6 +30,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.alibaba.android.arouter.launcher.ARouter;
 import com.appbaselib.utils.ToastUtils;
 
 
@@ -39,14 +41,10 @@ import com.appbaselib.utils.ToastUtils;
  * Date:    2015/4/13.   修改解除 eventbus
  * Description:
  */
-public abstract class BaseLazyFragment extends Fragment {
+public abstract class BaseLazyFragment<T extends ViewDataBinding> extends Fragment {
 
-    /**
-     * Screen information
-     */
-    protected int mScreenWidth = 0;
-    protected int mScreenHeight = 0;
-    protected float mScreenDensity = 0.0f;
+
+    public T mViewDataBinding;
 
     /**
      * context
@@ -57,7 +55,6 @@ public abstract class BaseLazyFragment extends Fragment {
     private boolean isFirstInvisible = true;
     private boolean isPrepared;
 
-
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -67,13 +64,15 @@ public abstract class BaseLazyFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ARouter.getInstance().inject(this);
 
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         if (getContentViewLayoutID() != 0) {
-            return inflater.inflate(getContentViewLayoutID(), null);
+          mViewDataBinding=DataBindingUtil.inflate(inflater, getContentViewLayoutID(), container, false);
+          return mViewDataBinding.getRoot();
         } else {
             return super.onCreateView(inflater, container, savedInstanceState);
         }
@@ -82,14 +81,6 @@ public abstract class BaseLazyFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-
-        mScreenDensity = displayMetrics.density;
-        mScreenHeight = displayMetrics.heightPixels;
-        mScreenWidth = displayMetrics.widthPixels;
-
         initView();
     }
 

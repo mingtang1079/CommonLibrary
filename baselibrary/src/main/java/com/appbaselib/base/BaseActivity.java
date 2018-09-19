@@ -1,12 +1,13 @@
 package com.appbaselib.base;
 
+import android.databinding.DataBindingUtil;
+import android.databinding.ViewDataBinding;
 import android.os.Bundle;
 import android.support.annotation.CallSuper;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.alibaba.android.arouter.launcher.ARouter;
 import com.appbaselib.loading.VaryViewHelperController;
 import com.appbaselib.netstatus.NetUtils;
 import com.appbaselib.utils.LogUtils;
@@ -14,31 +15,28 @@ import com.pangu.appbaselibrary.R;
 
 import org.greenrobot.eventbus.EventBus;
 
-import butterknife.ButterKnife;
-
 
 /**
  * Created by tangming on 2016/11/15.
  * Altered by Allen on 2017/09/15, 添加Toolbar menu加载
  */
 
-public abstract class BaseActivity extends BaseAppCompatActivity {
+public abstract class BaseActivity<T extends ViewDataBinding> extends BaseAppCompatActivity {
+
+   public T mViewDataBinding;
 
     private VaryViewHelperController mVaryViewHelperController = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ARouter.getInstance().inject(this);
-        findView();//用于解决部分控件使用了VaryViewHelperController，在在initView中初始化的问题(R2不知道为啥不起作用)
-        ButterKnife.bind(this);
+        mViewDataBinding = DataBindingUtil.setContentView(this, getContentViewLayoutID());
         if (null != getLoadingTargetView()) {
             mVaryViewHelperController = new VaryViewHelperController(getLoadingTargetView());
         }
         if (registerEventBus()) {
             EventBus.getDefault().register(this);    //alter  by  tangming  加入eventbus
         }
-        getIntentData();
         initToolbar();
         initView();
     }
@@ -56,29 +54,15 @@ public abstract class BaseActivity extends BaseAppCompatActivity {
                     finish();
                 }
             });
-        //    getToolbar().setTitleTextAppearance(mContext,R.style.ToolbarTitleText);
+            //    getToolbar().setTitleTextAppearance(mContext,R.style.ToolbarTitleText);
         } else {
             LogUtils.e("木有toolbar");
         }
     }
 
-    /**
-     * moudle 里面的 butternife 使用 R2好像无效
-     */
-    protected void findView() {
-
-    }
-
-    /**
-     * 获取intentdata
-     */
-    protected void getIntentData() {
-
-    }
-
     public abstract Toolbar getToolbar();
 
-    //请求数据统一的方法,以便统一修改  不强制使用，但如果不使用会导致下面的loaderror方法无作用，且以后不方便修改
+    //请求数据统一的方法,以便统一修改
     protected void requestData() {
     }
 
@@ -95,7 +79,7 @@ public abstract class BaseActivity extends BaseAppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {   //但点击toolbar的返回按钮的时候，
+        if (item.getItemId() == android.R.id.home) {   //点击toolbar的返回按钮的时候，
             finish();
             return true;
         }

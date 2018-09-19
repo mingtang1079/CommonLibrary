@@ -33,7 +33,9 @@ import com.appbaselib.netstatus.NetUtils;
 import com.appbaselib.utils.ToastUtils;
 import com.pangu.appbaselibrary.R;
 
-
+/**
+ * databinding 版本
+ */
 public abstract class BaseAppCompatActivity extends AppCompatActivity {
 
     /**
@@ -42,17 +44,14 @@ public abstract class BaseAppCompatActivity extends AppCompatActivity {
     protected int mScreenWidth = 0;
     protected int mScreenHeight = 0;
     protected float mScreenDensity = 0.0f;
-
     /**
      * context
      */
     protected Context mContext = null;
-
     /**
      * network status
      */
     protected NetChangeObserver mNetChangeObserver = null;
-
 
     /**
      * overridePendingTransition mode
@@ -60,7 +59,6 @@ public abstract class BaseAppCompatActivity extends AppCompatActivity {
     public enum TransitionMode {
         LEFT, RIGHT, TOP, BOTTOM, SCALE, FADE
     }
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -297,18 +295,6 @@ public abstract class BaseAppCompatActivity extends AppCompatActivity {
     /**
      * show toast
      *
-     * @param msg  material design   snackbar
-     */
-//    protected void showSnackbar(String msg) {
-//        //防止遮盖虚拟按键
-//        if (null != msg && !CommonUtils.isEmpty(msg)) {
-//            Snackbar.make(getLoadingTargetView(), msg, Snackbar.LENGTH_SHORT).show();
-//        }
-//    }
-
-    /**
-     * show toast
-     *
      * @param msg
      */
     protected void showToast(String msg) {
@@ -320,26 +306,6 @@ public abstract class BaseAppCompatActivity extends AppCompatActivity {
     protected void showLongToast(String msg) {
         if (null != msg && !TextUtils.isEmpty(msg)) {
             ToastUtils.showLong(mContext, msg);
-        }
-    }
-
-    /**
-     * set status bar translucency
-     *
-     * @param on
-     */
-    @Deprecated
-    protected void setTranslucentStatus(boolean on) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            Window win = getWindow();
-            WindowManager.LayoutParams winParams = win.getAttributes();
-            final int bits = WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
-            if (on) {
-                winParams.flags |= bits;
-            } else {
-                winParams.flags &= ~bits;
-            }
-            win.setAttributes(winParams);
         }
     }
 }
