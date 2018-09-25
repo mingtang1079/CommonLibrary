@@ -1,7 +1,9 @@
 package com.appbaselib.common;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.support.annotation.DrawableRes;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
@@ -25,6 +27,16 @@ public class ImageLoader {
     }
     public static void load(Context context, Uri path, ImageView imageView) {
         Glide.with(context).load(path)
+                //  .centerCrop()  //
+                .crossFade()
+//                .placeholder(R.drawable.image_loading)
+//                .error(R.drawable.image_failure)
+                .into(imageView);
+
+    }
+
+    public static void load(Context context, @DrawableRes  int res, ImageView imageView) {
+        Glide.with(context).load(res)
                 //  .centerCrop()  //
                 .crossFade()
 //                .placeholder(R.drawable.image_loading)

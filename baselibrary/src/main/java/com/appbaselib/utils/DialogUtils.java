@@ -25,5 +25,12 @@ public class DialogUtils {
         return new AlertDialog.Builder(mContext).setTitle(title).setMessage(content).setNegativeButton("取消", null).setPositiveButton(positiveText, mOnClickListener);
 
     }
+    public static AlertDialog.Builder getDefaultDialog(Context mContext, String title,String content,
+                                                       String positiveText, DialogInterface.OnClickListener mOnClickListener,String nagetiveTeext,DialogInterface.OnClickListener NagetiveOnClickListener) {
 
+        return new AlertDialog.Builder(mContext).setTitle(title).setMessage(content)
+                .setNegativeButton(nagetiveTeext, NagetiveOnClickListener)
+                .setPositiveButton(positiveText, mOnClickListener);
+
+    }
 }

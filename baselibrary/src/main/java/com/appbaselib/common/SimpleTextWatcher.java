@@ -1,10 +1,11 @@
 package com.appbaselib.common;
 
+import android.text.Editable;
 import android.text.TextWatcher;
 
 /**
  * Description: 简化TextWatcher
- * Created by lbw on 2017/7/18 0018.
+ * Created by tm on 2017/7/18 0018.
  */
 
 public abstract class SimpleTextWatcher implements TextWatcher {
@@ -12,9 +13,8 @@ public abstract class SimpleTextWatcher implements TextWatcher {
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
     }
-
     @Override
-    public void onTextChanged(CharSequence s, int start, int before, int count) {
+    public void afterTextChanged(Editable mEditable) {
 
     }
 }

@@ -83,16 +83,16 @@ public class Navigator {
             int i = 0;
             for (Fragment f :
                     mFragmentManager.getFragments()) {
-                mFragmentManager.beginTransaction().hide(f).commit();
+                mFragmentManager.beginTransaction().hide(f).commitAllowingStateLoss();
                 Log.e("tag", String.valueOf(i++));
 
             }
         }
 
         if (fragment.isAdded()) {
-            mFragmentManager.beginTransaction().show(fragment).commit();
+            mFragmentManager.beginTransaction().show(fragment).commitAllowingStateLoss();
         } else {
-            mFragmentManager.beginTransaction().add(mDefaultContainer, fragment).commit();
+            mFragmentManager.beginTransaction().add(mDefaultContainer, fragment).commitAllowingStateLoss();
         }
     }
 
